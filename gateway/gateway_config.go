@@ -13,7 +13,7 @@ func DefaultConfig() *Config {
 		Dialer:          websocket.DefaultDialer,
 		LargeThreshold:  50,
 		Intents:         IntentsDefault,
-		Compress:        true,
+		Compression:     CompressionZstd,
 		URL:             "wss://gateway.discord.gg",
 		ShardID:         0,
 		ShardCount:      1,
@@ -33,8 +33,8 @@ type Config struct {
 	LargeThreshold int
 	// Intents is the Intents for the Gateway. Defaults to IntentsNone.
 	Intents Intents
-	// Compress is whether the Gateway should compress payloads. Defaults to true.
-	Compress bool
+	// Compression configures whether the Gateway should compress packets. Defaults to CompressionZstd.
+	Compression Compression
 	// URL is the URL of the Gateway. Defaults to fetch from Discord.
 	URL string
 	// ShardID is the shardID of the Gateway. Defaults to 0.
@@ -110,11 +110,11 @@ func WithIntents(intents ...Intents) ConfigOpt {
 	}
 }
 
-// WithCompress sets whether this Gateway supports compression.
+// WithCompression configures the packet compression used by the Gateway.
 // See here for more information: https://discord.com/developers/docs/topics/gateway#encoding-and-compression
-func WithCompress(compress bool) ConfigOpt {
+func WithCompression(compression Compression) ConfigOpt {
 	return func(config *Config) {
-		config.Compress = compress
+		config.Compression = compression
 	}
 }
 

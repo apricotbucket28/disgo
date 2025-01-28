@@ -73,6 +73,21 @@ const (
 	StatusDisconnected
 )
 
+// Compression enables transport compression for packets received from Discord.
+// https://discord.com/developers/docs/events/gateway#transport-compression
+type Compression int
+
+const (
+	// CompressionNone disables transport compression.
+	CompressionNone Compression = iota
+
+	// CompressionZlib decompresses incoming packets via a streaming zlib context.
+	CompressionZlib
+
+	// CompressionZstd decompresses incoming packets via a streaming zstd context.
+	CompressionZstd
+)
+
 type (
 	// EventHandlerFunc is a function that is called when an event is received.
 	EventHandlerFunc func(gatewayEventType EventType, sequenceNumber int, shardID int, event EventData)

@@ -1,14 +1,16 @@
 package gateway
 
 import (
+	"bufio"
 	"bytes"
-	"compress/zlib"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"net"
+	"net/url"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -16,8 +18,13 @@ import (
 	"github.com/disgoorg/json"
 	"github.com/gorilla/websocket"
 
+	"github.com/klauspost/compress/zlib"
+	"github.com/klauspost/compress/zstd"
+
 	"github.com/disgoorg/disgo/discord"
 )
+
+var zlibSyncFlush = []byte{0x0, 0x0, 0xFF, 0xFF}
 
 var _ Gateway = (*gatewayImpl)(nil)
 
@@ -46,6 +53,9 @@ type gatewayImpl struct {
 	connMu          sync.Mutex
 	heartbeatCancel context.CancelFunc
 	status          Status
+
+	msgBuffer    bytes.Buffer
+	decompressor io.ReadCloser
 
 	heartbeatInterval     time.Duration
 	lastHeartbeatSent     time.Time
@@ -90,7 +100,20 @@ func (g *gatewayImpl) open(ctx context.Context) error {
 	if g.config.ResumeURL != nil && g.config.EnableResumeURL {
 		wsURL = *g.config.ResumeURL
 	}
-	gatewayURL := fmt.Sprintf("%s?v=%d&encoding=json", wsURL, Version)
+
+	values := url.Values{}
+	values.Set("v", strconv.Itoa(Version))
+	values.Set("encoding", "json")
+
+	switch g.config.Compression {
+	case CompressionZlib:
+		values.Set("compress", "zlib-stream")
+	case CompressionZstd:
+		values.Set("compress", "zstd-stream")
+	}
+
+	gatewayURL := wsURL + "?" + values.Encode()
+
 	g.lastHeartbeatSent = time.Now().UTC()
 	conn, rs, err := g.config.Dialer.DialContext(ctx, gatewayURL, nil)
 	if err != nil {
@@ -146,6 +169,14 @@ func (g *gatewayImpl) CloseWithCode(ctx context.Context, code int, message strin
 		}
 		_ = g.conn.Close()
 		g.conn = nil
+
+		g.msgBuffer.Reset()
+		if g.decompressor != nil {
+			if err := g.decompressor.Close(); err != nil {
+				g.config.Logger.Warn("error closing decompressor context", slog.Any("err", err))
+			}
+			g.decompressor = nil
+		}
 
 		// clear resume data as we closed gracefully
 		if code == websocket.CloseNormalClosure || code == websocket.CloseGoingAway {
@@ -282,7 +313,6 @@ func (g *gatewayImpl) identify() {
 			Browser: g.config.Browser,
 			Device:  g.config.Device,
 		},
-		Compress:       g.config.Compress,
 		LargeThreshold: g.config.LargeThreshold,
 		Intents:        g.config.Intents,
 		Presence:       g.config.Presence,
@@ -376,6 +406,11 @@ loop:
 			continue
 		}
 
+		if message == nil {
+			// incomplete gateway message, waiting for extra packets
+			continue
+		}
+
 		switch message.Op {
 		case OpcodeHello:
 			g.heartbeatInterval = time.Duration(message.D.(MessageDataHello).HeartbeatInterval) * time.Millisecond
@@ -464,29 +499,64 @@ loop:
 	}
 }
 
-func (g *gatewayImpl) parseMessage(mt int, r io.Reader) (Message, error) {
+func (g *gatewayImpl) parseMessage(mt int, r io.Reader) (*Message, error) {
 	if mt == websocket.BinaryMessage {
-		g.config.Logger.Debug("binary message received. decompressing")
+		g.config.Logger.Debug("binary message received")
 
-		reader, err := zlib.NewReader(r)
+		msg, err := io.ReadAll(r)
 		if err != nil {
-			return Message{}, fmt.Errorf("failed to decompress zlib: %w", err)
+			return nil, fmt.Errorf("failed to read message: %w", err)
 		}
-		defer reader.Close()
-		r = reader
+
+		g.msgBuffer.Write(msg)
+
+		switch g.config.Compression {
+		case CompressionZlib:
+			if !bytes.HasSuffix(msg, zlibSyncFlush) {
+				// never reached?
+				g.config.Logger.Warn("message doesn't have zlib sync flush, continuing")
+				//	return nil, nil
+			}
+			defer g.msgBuffer.Reset()
+
+			if g.decompressor == nil {
+				g.config.Logger.Debug("creating new zlib reader")
+				g.decompressor, err = zlib.NewReader(&g.msgBuffer)
+				if err != nil {
+					return nil, fmt.Errorf("failed to initialize zlib: %w", err)
+				}
+			}
+
+			r = g.decompressor
+
+		case CompressionZstd:
+			if g.decompressor == nil {
+				g.config.Logger.Debug("creating new zstd reader")
+
+				dec, err := zstd.NewReader(bufio.NewReader(&g.msgBuffer), zstd.WithDecoderConcurrency(1))
+				if err != nil {
+					return nil, fmt.Errorf("failed to initialize zstd: %w", err)
+				}
+				g.decompressor = dec.IOReadCloser()
+			}
+
+			defer g.msgBuffer.Reset()
+			r = g.decompressor
+		}
 	}
 
 	if g.config.Logger.Enabled(context.Background(), slog.LevelDebug) {
-		buff := new(bytes.Buffer)
-		tr := io.TeeReader(r, buff)
-		data, err := io.ReadAll(tr)
-		if err != nil {
-			return Message{}, fmt.Errorf("failed to read message: %w", err)
+		var data json.RawMessage
+		if err := json.NewDecoder(r).Decode(&data); err != nil {
+			return nil, fmt.Errorf("failed to read message: %w", err)
 		}
 		g.config.Logger.Debug("received gateway message", slog.String("data", string(data)))
-		r = buff
+
+		var message *Message
+		err := json.Unmarshal(data, &message)
+		return message, err
 	}
 
-	var message Message
+	var message *Message
 	return message, json.NewDecoder(r).Decode(&message)
 }
