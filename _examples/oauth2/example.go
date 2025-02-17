@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"log/slog"
-	"math/rand"
+	"math/rand/v2"
 	"net/http"
 	"os"
-	"time"
+	"strings"
 
 	"github.com/disgoorg/disgo"
 	"github.com/disgoorg/disgo/discord"
@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	letters      = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	letters      = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	clientID     = snowflake.GetEnv("client_id")
 	clientSecret = os.Getenv("client_secret")
 	baseURL      = os.Getenv("base_url")
@@ -25,10 +25,6 @@ var (
 	client       oauth2.Client
 	sessions     map[string]oauth2.Session
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 func main() {
 	slog.Info("starting example...")
@@ -119,9 +115,10 @@ func writeError(w http.ResponseWriter, text string, err error) {
 }
 
 func randStr(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+	var b strings.Builder
+	b.Grow(n)
+	for range n {
+		b.WriteByte(letters[rand.IntN(len(letters))])
 	}
-	return string(b)
+	return b.String()
 }
