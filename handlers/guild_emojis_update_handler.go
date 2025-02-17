@@ -16,7 +16,7 @@ type updatedEmoji struct {
 	new discord.Emoji
 }
 
-func gatewayHandlerGuildEmojisUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildEmojisUpdate) {
+func gatewayHandlerGuildEmojisUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildEmojisUpdate) {
 	client.EventManager().DispatchEvent(&events.EmojisUpdate{
 		GenericEvent:           events.NewGenericEvent(client, sequenceNumber, shardID),
 		EventGuildEmojisUpdate: event,

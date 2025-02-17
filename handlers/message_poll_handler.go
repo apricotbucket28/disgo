@@ -6,7 +6,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerMessagePollVoteAdd(client bot.Client, sequenceNumber int, shardID int, event gateway.EventMessagePollVoteAdd) {
+func gatewayHandlerMessagePollVoteAdd(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventMessagePollVoteAdd) {
 	genericEvent := events.NewGenericEvent(client, sequenceNumber, shardID)
 
 	client.EventManager().DispatchEvent(&events.MessagePollVoteAdd{
@@ -44,7 +44,7 @@ func gatewayHandlerMessagePollVoteAdd(client bot.Client, sequenceNumber int, sha
 	}
 }
 
-func gatewayHandlerMessagePollVoteRemove(client bot.Client, sequenceNumber int, shardID int, event gateway.EventMessagePollVoteRemove) {
+func gatewayHandlerMessagePollVoteRemove(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventMessagePollVoteRemove) {
 	genericEvent := events.NewGenericEvent(client, sequenceNumber, shardID)
 
 	client.EventManager().DispatchEvent(&events.MessagePollVoteRemove{

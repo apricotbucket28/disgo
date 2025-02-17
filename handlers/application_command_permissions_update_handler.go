@@ -6,7 +6,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerApplicationCommandPermissionsUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventApplicationCommandPermissionsUpdate) {
+func gatewayHandlerApplicationCommandPermissionsUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventApplicationCommandPermissionsUpdate) {
 	client.EventManager().DispatchEvent(&events.GuildApplicationCommandPermissionsUpdate{
 		GenericEvent: events.NewGenericEvent(client, sequenceNumber, shardID),
 		Permissions:  event.ApplicationCommandPermissions,

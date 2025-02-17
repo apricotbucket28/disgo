@@ -75,7 +75,7 @@ const (
 
 type (
 	// EventHandlerFunc is a function that is called when an event is received.
-	EventHandlerFunc func(gatewayEventType EventType, sequenceNumber int, shardID int, event EventData)
+	EventHandlerFunc func(gatewayEventType EventType, sequenceNumber uint64, shardID int, event EventData)
 
 	// CreateFunc is a type that is used to create a new Gateway(s).
 	CreateFunc func(token string, eventHandlerFunc EventHandlerFunc, closeHandlerFUnc CloseHandlerFunc, opts ...ConfigOpt) Gateway
@@ -97,8 +97,8 @@ type Gateway interface {
 	SessionID() *string
 
 	// LastSequenceReceived returns the last sequence number that was received by the Gateway.
-	// This may be nil if the Gateway was never connected to Discord, was gracefully closed with websocket.CloseNormalClosure or websocket.CloseGoingAway.
-	LastSequenceReceived() *int
+	// This may be 0 if the Gateway was never connected to Discord, was gracefully closed with websocket.CloseNormalClosure or websocket.CloseGoingAway.
+	LastSequenceReceived() uint64
 
 	// Intents returns the Intents that are used by this Gateway.
 	Intents() Intents

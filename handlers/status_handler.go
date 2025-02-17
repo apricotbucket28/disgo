@@ -6,21 +6,21 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerRaw(client bot.Client, sequenceNumber int, shardID int, event gateway.EventRaw) {
+func gatewayHandlerRaw(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventRaw) {
 	client.EventManager().DispatchEvent(&events.Raw{
 		GenericEvent: events.NewGenericEvent(client, sequenceNumber, shardID),
 		EventRaw:     event,
 	})
 }
 
-func gatewayHandlerHeartbeatAck(client bot.Client, sequenceNumber int, shardID int, event gateway.EventHeartbeatAck) {
+func gatewayHandlerHeartbeatAck(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventHeartbeatAck) {
 	client.EventManager().DispatchEvent(&events.HeartbeatAck{
 		GenericEvent:      events.NewGenericEvent(client, sequenceNumber, shardID),
 		EventHeartbeatAck: event,
 	})
 }
 
-func gatewayHandlerReady(client bot.Client, sequenceNumber int, shardID int, event gateway.EventReady) {
+func gatewayHandlerReady(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventReady) {
 	client.Caches().SetSelfUser(event.User)
 
 	for _, guild := range event.Guilds {
@@ -33,7 +33,7 @@ func gatewayHandlerReady(client bot.Client, sequenceNumber int, shardID int, eve
 	})
 }
 
-func gatewayHandlerResumed(client bot.Client, sequenceNumber int, shardID int, _ gateway.EventData) {
+func gatewayHandlerResumed(client bot.Client, sequenceNumber uint64, shardID int, _ gateway.EventData) {
 	client.EventManager().DispatchEvent(&events.Resumed{
 		GenericEvent: events.NewGenericEvent(client, sequenceNumber, shardID),
 	})

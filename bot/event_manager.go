@@ -36,7 +36,7 @@ type EventManager interface {
 	RemoveEventListeners(eventListeners ...EventListener)
 
 	// HandleGatewayEvent calls the correct GatewayEventHandler for the payload
-	HandleGatewayEvent(gatewayEventType gateway.EventType, sequenceNumber int, shardID int, event gateway.EventData)
+	HandleGatewayEvent(gatewayEventType gateway.EventType, sequenceNumber uint64, shardID int, event gateway.EventData)
 
 	// HandleHTTPEvent calls the HTTPServerEventHandler for the payload
 	HandleHTTPEvent(respondFunc httpserver.RespondFunc, event httpserver.EventInteractionCreate)
@@ -83,30 +83,30 @@ func (l *listenerChan[E]) OnEvent(e Event) {
 // Event the basic interface each event implement
 type Event interface {
 	Client() Client
-	SequenceNumber() int
+	SequenceNumber() uint64
 }
 
 // GatewayEventHandler is used to handle Gateway Event(s)
 type GatewayEventHandler interface {
 	EventType() gateway.EventType
-	HandleGatewayEvent(client Client, sequenceNumber int, shardID int, event gateway.EventData)
+	HandleGatewayEvent(client Client, sequenceNumber uint64, shardID int, event gateway.EventData)
 }
 
 // NewGatewayEventHandler returns a new GatewayEventHandler for the given GatewayEventType and handler func
-func NewGatewayEventHandler[T gateway.EventData](eventType gateway.EventType, handleFunc func(client Client, sequenceNumber int, shardID int, event T)) GatewayEventHandler {
+func NewGatewayEventHandler[T gateway.EventData](eventType gateway.EventType, handleFunc func(client Client, sequenceNumber uint64, shardID int, event T)) GatewayEventHandler {
 	return &genericGatewayEventHandler[T]{eventType: eventType, handleFunc: handleFunc}
 }
 
 type genericGatewayEventHandler[T gateway.EventData] struct {
 	eventType  gateway.EventType
-	handleFunc func(client Client, sequenceNumber int, shardID int, event T)
+	handleFunc func(client Client, sequenceNumber uint64, shardID int, event T)
 }
 
 func (h *genericGatewayEventHandler[T]) EventType() gateway.EventType {
 	return h.eventType
 }
 
-func (h *genericGatewayEventHandler[T]) HandleGatewayEvent(client Client, sequenceNumber int, shardID int, event gateway.EventData) {
+func (h *genericGatewayEventHandler[T]) HandleGatewayEvent(client Client, sequenceNumber uint64, shardID int, event gateway.EventData) {
 	if e, ok := event.(T); ok {
 		h.handleFunc(client, sequenceNumber, shardID, e)
 	}
@@ -129,7 +129,7 @@ type eventManagerImpl struct {
 	httpServerHandler  HTTPServerEventHandler
 }
 
-func (e *eventManagerImpl) HandleGatewayEvent(gatewayEventType gateway.EventType, sequenceNumber int, shardID int, event gateway.EventData) {
+func (e *eventManagerImpl) HandleGatewayEvent(gatewayEventType gateway.EventType, sequenceNumber uint64, shardID int, event gateway.EventData) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	if handler, ok := e.gatewayHandlers[gatewayEventType]; ok {

@@ -7,7 +7,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerTypingStart(client bot.Client, sequenceNumber int, shardID int, event gateway.EventTypingStart) {
+func gatewayHandlerTypingStart(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventTypingStart) {
 	client.EventManager().DispatchEvent(&events.UserTypingStart{
 		GenericEvent: events.NewGenericEvent(client, sequenceNumber, shardID),
 		ChannelID:    event.ChannelID,

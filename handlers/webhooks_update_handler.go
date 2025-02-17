@@ -6,7 +6,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerWebhooksUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventWebhooksUpdate) {
+func gatewayHandlerWebhooksUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventWebhooksUpdate) {
 	client.EventManager().DispatchEvent(&events.WebhooksUpdate{
 		GenericEvent: events.NewGenericEvent(client, sequenceNumber, shardID),
 		GuildId:      event.GuildID,

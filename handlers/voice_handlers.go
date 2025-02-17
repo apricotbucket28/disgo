@@ -6,14 +6,14 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerVoiceChannelEffectSend(client bot.Client, sequenceNumber int, shardID int, event gateway.EventVoiceChannelEffectSend) {
+func gatewayHandlerVoiceChannelEffectSend(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventVoiceChannelEffectSend) {
 	client.EventManager().DispatchEvent(&events.GuildVoiceChannelEffectSend{
 		GenericEvent:                events.NewGenericEvent(client, sequenceNumber, shardID),
 		EventVoiceChannelEffectSend: event,
 	})
 }
 
-func gatewayHandlerVoiceStateUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventVoiceStateUpdate) {
+func gatewayHandlerVoiceStateUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventVoiceStateUpdate) {
 	member := event.Member
 
 	oldVoiceState, oldOk := client.Caches().VoiceState(event.GuildID, event.UserID)
@@ -58,7 +58,7 @@ func gatewayHandlerVoiceStateUpdate(client bot.Client, sequenceNumber int, shard
 	}
 }
 
-func gatewayHandlerVoiceServerUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventVoiceServerUpdate) {
+func gatewayHandlerVoiceServerUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventVoiceServerUpdate) {
 	if client.VoiceManager() != nil {
 		client.VoiceManager().HandleVoiceServerUpdate(event)
 	}

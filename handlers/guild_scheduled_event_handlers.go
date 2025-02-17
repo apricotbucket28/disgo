@@ -6,7 +6,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerGuildScheduledEventCreate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildScheduledEventCreate) {
+func gatewayHandlerGuildScheduledEventCreate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildScheduledEventCreate) {
 	client.Caches().AddGuildScheduledEvent(event.GuildScheduledEvent)
 
 	client.EventManager().DispatchEvent(&events.GuildScheduledEventCreate{
@@ -17,7 +17,7 @@ func gatewayHandlerGuildScheduledEventCreate(client bot.Client, sequenceNumber i
 	})
 }
 
-func gatewayHandlerGuildScheduledEventUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildScheduledEventUpdate) {
+func gatewayHandlerGuildScheduledEventUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildScheduledEventUpdate) {
 	oldGuildScheduledEvent, _ := client.Caches().GuildScheduledEvent(event.GuildID, event.ID)
 	client.Caches().AddGuildScheduledEvent(event.GuildScheduledEvent)
 
@@ -30,7 +30,7 @@ func gatewayHandlerGuildScheduledEventUpdate(client bot.Client, sequenceNumber i
 	})
 }
 
-func gatewayHandlerGuildScheduledEventDelete(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildScheduledEventCreate) {
+func gatewayHandlerGuildScheduledEventDelete(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildScheduledEventCreate) {
 	client.Caches().RemoveGuildScheduledEvent(event.GuildID, event.ID)
 
 	client.EventManager().DispatchEvent(&events.GuildScheduledEventDelete{
@@ -41,7 +41,7 @@ func gatewayHandlerGuildScheduledEventDelete(client bot.Client, sequenceNumber i
 	})
 }
 
-func gatewayHandlerGuildScheduledEventUserAdd(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildScheduledEventUserAdd) {
+func gatewayHandlerGuildScheduledEventUserAdd(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildScheduledEventUserAdd) {
 	client.EventManager().DispatchEvent(&events.GuildScheduledEventUserAdd{
 		GenericGuildScheduledEventUser: &events.GenericGuildScheduledEventUser{
 			GenericEvent:          events.NewGenericEvent(client, sequenceNumber, shardID),
@@ -52,7 +52,7 @@ func gatewayHandlerGuildScheduledEventUserAdd(client bot.Client, sequenceNumber 
 	})
 }
 
-func gatewayHandlerGuildScheduledEventUserRemove(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildScheduledEventUserRemove) {
+func gatewayHandlerGuildScheduledEventUserRemove(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildScheduledEventUserRemove) {
 	client.EventManager().DispatchEvent(&events.GuildScheduledEventUserRemove{
 		GenericGuildScheduledEventUser: &events.GenericGuildScheduledEventUser{
 			GenericEvent:          events.NewGenericEvent(client, sequenceNumber, shardID),

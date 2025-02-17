@@ -6,7 +6,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerStageInstanceCreate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventStageInstanceCreate) {
+func gatewayHandlerStageInstanceCreate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventStageInstanceCreate) {
 	client.Caches().AddStageInstance(event.StageInstance)
 
 	client.EventManager().DispatchEvent(&events.StageInstanceCreate{
@@ -18,7 +18,7 @@ func gatewayHandlerStageInstanceCreate(client bot.Client, sequenceNumber int, sh
 	})
 }
 
-func gatewayHandlerStageInstanceUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventStageInstanceUpdate) {
+func gatewayHandlerStageInstanceUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventStageInstanceUpdate) {
 	oldStageInstance, _ := client.Caches().StageInstance(event.GuildID, event.ID)
 	client.Caches().AddStageInstance(event.StageInstance)
 
@@ -32,7 +32,7 @@ func gatewayHandlerStageInstanceUpdate(client bot.Client, sequenceNumber int, sh
 	})
 }
 
-func gatewayHandlerStageInstanceDelete(client bot.Client, sequenceNumber int, shardID int, event gateway.EventStageInstanceDelete) {
+func gatewayHandlerStageInstanceDelete(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventStageInstanceDelete) {
 	client.Caches().RemoveStageInstance(event.GuildID, event.ID)
 
 	client.EventManager().DispatchEvent(&events.StageInstanceDelete{

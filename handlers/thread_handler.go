@@ -7,7 +7,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerThreadCreate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventThreadCreate) {
+func gatewayHandlerThreadCreate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventThreadCreate) {
 	client.Caches().AddChannel(event.GuildThread)
 	client.Caches().AddThreadMember(event.ThreadMember)
 
@@ -23,7 +23,7 @@ func gatewayHandlerThreadCreate(client bot.Client, sequenceNumber int, shardID i
 	})
 }
 
-func gatewayHandlerThreadUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventThreadUpdate) {
+func gatewayHandlerThreadUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventThreadUpdate) {
 	oldGuildThread, _ := client.Caches().GuildThread(event.ID())
 	client.Caches().AddChannel(event.GuildThread)
 
@@ -39,7 +39,7 @@ func gatewayHandlerThreadUpdate(client bot.Client, sequenceNumber int, shardID i
 	})
 }
 
-func gatewayHandlerThreadDelete(client bot.Client, sequenceNumber int, shardID int, event gateway.EventThreadDelete) {
+func gatewayHandlerThreadDelete(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventThreadDelete) {
 	var thread discord.GuildThread
 	if channel, ok := client.Caches().RemoveChannel(event.ID); ok {
 		thread, _ = channel.(discord.GuildThread)
@@ -57,7 +57,7 @@ func gatewayHandlerThreadDelete(client bot.Client, sequenceNumber int, shardID i
 	})
 }
 
-func gatewayHandlerThreadListSync(client bot.Client, sequenceNumber int, shardID int, event gateway.EventThreadListSync) {
+func gatewayHandlerThreadListSync(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventThreadListSync) {
 	for _, thread := range event.Threads {
 		client.Caches().AddChannel(thread)
 		client.EventManager().DispatchEvent(&events.ThreadShow{
@@ -71,11 +71,11 @@ func gatewayHandlerThreadListSync(client bot.Client, sequenceNumber int, shardID
 	}
 }
 
-func gatewayHandlerThreadMemberUpdate(_ bot.Client, _ int, _ int, _ gateway.EventData) {
+func gatewayHandlerThreadMemberUpdate(_ bot.Client, _ uint64, _ int, _ gateway.EventData) {
 	// ThreadMembersUpdate kinda handles this already?
 }
 
-func gatewayHandlerThreadMembersUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventThreadMembersUpdate) {
+func gatewayHandlerThreadMembersUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventThreadMembersUpdate) {
 	genericEvent := events.NewGenericEvent(client, sequenceNumber, shardID)
 
 	if thread, ok := client.Caches().GuildThread(event.ID); ok {

@@ -6,7 +6,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerUserUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventUserUpdate) {
+func gatewayHandlerUserUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventUserUpdate) {
 	oldUser, _ := client.Caches().SelfUser()
 	client.Caches().SetSelfUser(event.OAuth2User)
 

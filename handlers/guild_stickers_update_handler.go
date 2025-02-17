@@ -15,7 +15,7 @@ type updatedSticker struct {
 	new discord.Sticker
 }
 
-func gatewayHandlerGuildStickersUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildStickersUpdate) {
+func gatewayHandlerGuildStickersUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildStickersUpdate) {
 	client.EventManager().DispatchEvent(&events.StickersUpdate{
 		GenericEvent:             events.NewGenericEvent(client, sequenceNumber, shardID),
 		EventGuildStickersUpdate: event,

@@ -12,7 +12,7 @@ import (
 	"github.com/disgoorg/disgo/rest"
 )
 
-func gatewayHandlerInteractionCreate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventInteractionCreate) {
+func gatewayHandlerInteractionCreate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventInteractionCreate) {
 	handleInteraction(client, sequenceNumber, shardID, nil, event.Interaction)
 }
 
@@ -29,7 +29,7 @@ func respond(client bot.Client, respondFunc httpserver.RespondFunc, interaction 
 	}
 }
 
-func handleInteraction(client bot.Client, sequenceNumber int, shardID int, respondFunc httpserver.RespondFunc, interaction discord.Interaction) {
+func handleInteraction(client bot.Client, sequenceNumber uint64, shardID int, respondFunc httpserver.RespondFunc, interaction discord.Interaction) {
 	genericEvent := events.NewGenericEvent(client, sequenceNumber, shardID)
 
 	client.EventManager().DispatchEvent(&events.InteractionCreate{

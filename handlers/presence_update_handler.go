@@ -11,7 +11,7 @@ import (
 	"github.com/disgoorg/snowflake/v2"
 )
 
-func gatewayHandlerPresenceUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventPresenceUpdate) {
+func gatewayHandlerPresenceUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventPresenceUpdate) {
 	genericEvent := events.NewGenericEvent(client, sequenceNumber, shardID)
 
 	client.EventManager().DispatchEvent(&events.PresenceUpdate{

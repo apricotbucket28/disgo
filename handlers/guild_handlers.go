@@ -9,7 +9,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerGuildCreate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildCreate) {
+func gatewayHandlerGuildCreate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildCreate) {
 	wasUnready := client.Caches().IsGuildUnready(event.ID)
 	wasUnavailable := client.Caches().IsGuildUnavailable(event.ID)
 
@@ -105,7 +105,7 @@ func gatewayHandlerGuildCreate(client bot.Client, sequenceNumber int, shardID in
 	}
 }
 
-func gatewayHandlerGuildUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildUpdate) {
+func gatewayHandlerGuildUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildUpdate) {
 	oldGuild, _ := client.Caches().Guild(event.ID)
 	client.Caches().AddGuild(event.Guild)
 
@@ -118,7 +118,7 @@ func gatewayHandlerGuildUpdate(client bot.Client, sequenceNumber int, shardID in
 	})
 }
 
-func gatewayHandlerGuildDelete(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildDelete) {
+func gatewayHandlerGuildDelete(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildDelete) {
 	if event.Unavailable {
 		client.Caches().SetGuildUnavailable(event.ID, true)
 	}
@@ -159,7 +159,7 @@ func gatewayHandlerGuildDelete(client bot.Client, sequenceNumber int, shardID in
 	}
 }
 
-func gatewayHandlerGuildAuditLogEntryCreate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildAuditLogEntryCreate) {
+func gatewayHandlerGuildAuditLogEntryCreate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildAuditLogEntryCreate) {
 	client.EventManager().DispatchEvent(&events.GuildAuditLogEntryCreate{
 		GenericEvent:  events.NewGenericEvent(client, sequenceNumber, shardID),
 		GuildID:       event.GuildID,

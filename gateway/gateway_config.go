@@ -46,7 +46,7 @@ type Config struct {
 	// ResumeURL is the last resumeURL of the Gateway. Defaults to nil (no resume).
 	ResumeURL *string
 	// LastSequenceReceived is the last sequence received by the Gateway. Defaults to nil (no resume).
-	LastSequenceReceived *int
+	LastSequenceReceived *uint64
 	// AutoReconnect is whether the Gateway should automatically reconnect or call the CloseHandlerFunc. Defaults to true.
 	AutoReconnect bool
 	// EnableRawEvents is whether the Gateway should emit EventRaw. Defaults to false.
@@ -151,7 +151,7 @@ func WithSessionID(sessionID string) ConfigOpt {
 
 // WithSequence sets the last sequence received for the Gateway.
 // If sessionID and lastSequence is present while connecting, the Gateway will try to resume the session.
-func WithSequence(sequence int) ConfigOpt {
+func WithSequence(sequence uint64) ConfigOpt {
 	return func(config *Config) {
 		config.LastSequenceReceived = &sequence
 	}

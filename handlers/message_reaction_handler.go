@@ -7,7 +7,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerMessageReactionAdd(client bot.Client, sequenceNumber int, shardID int, event gateway.EventMessageReactionAdd) {
+func gatewayHandlerMessageReactionAdd(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventMessageReactionAdd) {
 	genericEvent := events.NewGenericEvent(client, sequenceNumber, shardID)
 
 	client.EventManager().DispatchEvent(&events.MessageReactionAdd{
@@ -60,7 +60,7 @@ func gatewayHandlerMessageReactionAdd(client bot.Client, sequenceNumber int, sha
 	}
 }
 
-func gatewayHandlerMessageReactionRemove(client bot.Client, sequenceNumber int, shardID int, event gateway.EventMessageReactionRemove) {
+func gatewayHandlerMessageReactionRemove(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventMessageReactionRemove) {
 	genericEvent := events.NewGenericEvent(client, sequenceNumber, shardID)
 
 	client.EventManager().DispatchEvent(&events.MessageReactionRemove{
@@ -104,7 +104,7 @@ func gatewayHandlerMessageReactionRemove(client bot.Client, sequenceNumber int, 
 	}
 }
 
-func gatewayHandlerMessageReactionRemoveAll(client bot.Client, sequenceNumber int, shardID int, event gateway.EventMessageReactionRemoveAll) {
+func gatewayHandlerMessageReactionRemoveAll(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventMessageReactionRemoveAll) {
 	genericEvent := events.NewGenericEvent(client, sequenceNumber, shardID)
 
 	client.EventManager().DispatchEvent(&events.MessageReactionRemoveAll{
@@ -130,7 +130,7 @@ func gatewayHandlerMessageReactionRemoveAll(client bot.Client, sequenceNumber in
 	}
 }
 
-func gatewayHandlerMessageReactionRemoveEmoji(client bot.Client, sequenceNumber int, shardID int, event gateway.EventMessageReactionRemoveEmoji) {
+func gatewayHandlerMessageReactionRemoveEmoji(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventMessageReactionRemoveEmoji) {
 	genericEvent := events.NewGenericEvent(client, sequenceNumber, shardID)
 
 	client.EventManager().DispatchEvent(&events.MessageReactionRemoveEmoji{

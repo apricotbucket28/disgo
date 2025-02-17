@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -27,13 +28,17 @@ func New(token string, eventHandlerFunc EventHandlerFunc, closeHandlerFunc Close
 	config.Apply(opts)
 	config.Logger = config.Logger.With(slog.String("name", "gateway"), slog.Int("shard_id", config.ShardID), slog.Int("shard_count", config.ShardCount))
 
-	return &gatewayImpl{
+	g := &gatewayImpl{
 		config:           *config,
 		eventHandlerFunc: eventHandlerFunc,
 		closeHandlerFunc: closeHandlerFunc,
 		token:            token,
 		status:           StatusUnconnected,
 	}
+	if g.config.LastSequenceReceived != nil {
+		g.lastSequenceReceived.Store(*g.config.LastSequenceReceived)
+	}
+	return g
 }
 
 type gatewayImpl struct {
@@ -42,11 +47,13 @@ type gatewayImpl struct {
 	closeHandlerFunc CloseHandlerFunc
 	token            string
 
-	conn            *websocket.Conn
-	connMu          sync.Mutex
-	heartbeatCancel context.CancelFunc
-	status          Status
+	conn   *websocket.Conn
+	connMu sync.Mutex
+	status Status
 
+	lastSequenceReceived atomic.Uint64
+
+	heartbeatCancel       context.CancelFunc
 	heartbeatInterval     time.Duration
 	lastHeartbeatSent     time.Time
 	lastHeartbeatReceived time.Time
@@ -64,8 +71,8 @@ func (g *gatewayImpl) SessionID() *string {
 	return g.config.SessionID
 }
 
-func (g *gatewayImpl) LastSequenceReceived() *int {
-	return g.config.LastSequenceReceived
+func (g *gatewayImpl) LastSequenceReceived() uint64 {
+	return g.lastSequenceReceived.Load()
 }
 
 func (g *gatewayImpl) Intents() Intents {
@@ -151,7 +158,7 @@ func (g *gatewayImpl) CloseWithCode(ctx context.Context, code int, message strin
 		if code == websocket.CloseNormalClosure || code == websocket.CloseGoingAway {
 			g.config.SessionID = nil
 			g.config.ResumeURL = nil
-			g.config.LastSequenceReceived = nil
+			g.lastSequenceReceived.Store(0)
 		}
 	}
 	g.status = StatusDisconnected
@@ -257,7 +264,7 @@ func (g *gatewayImpl) sendHeartbeat() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), g.heartbeatInterval)
 	defer cancel()
-	if err := g.Send(ctx, OpcodeHeartbeat, MessageDataHeartbeat(*g.config.LastSequenceReceived)); err != nil {
+	if err := g.Send(ctx, OpcodeHeartbeat, MessageDataHeartbeat(g.lastSequenceReceived.Load())); err != nil {
 		if errors.Is(err, discord.ErrShardNotConnected) || errors.Is(err, syscall.EPIPE) {
 			return
 		}
@@ -302,7 +309,7 @@ func (g *gatewayImpl) resume() {
 	resume := MessageDataResume{
 		Token:     g.token,
 		SessionID: *g.config.SessionID,
-		Seq:       *g.config.LastSequenceReceived,
+		Seq:       g.lastSequenceReceived.Load(),
 	}
 	g.config.Logger.Debug("sending Resume command")
 
@@ -335,9 +342,9 @@ loop:
 				reconnect = closeCode.Reconnect
 
 				if closeCode == CloseEventCodeInvalidSeq {
-					g.config.LastSequenceReceived = nil
 					g.config.SessionID = nil
 					g.config.ResumeURL = nil
+					g.lastSequenceReceived.Store(0)
 				}
 				msg := "gateway close received"
 				args := []any{
@@ -382,7 +389,7 @@ loop:
 			g.lastHeartbeatReceived = time.Now().UTC()
 			go g.heartbeat()
 
-			if g.config.LastSequenceReceived == nil || g.config.SessionID == nil {
+			if g.config.SessionID == nil || g.lastSequenceReceived.Load() == 0 {
 				g.identify()
 			} else {
 				g.resume()
@@ -390,7 +397,7 @@ loop:
 
 		case OpcodeDispatch:
 			// set last sequence received
-			g.config.LastSequenceReceived = &message.S
+			g.lastSequenceReceived.Store(message.S)
 
 			eventData, ok := message.D.(EventData)
 			if !ok && message.D != nil {
@@ -439,8 +446,8 @@ loop:
 			} else {
 				// clear resume info
 				g.config.SessionID = nil
-				g.config.LastSequenceReceived = nil
 				g.config.ResumeURL = nil
+				g.lastSequenceReceived.Store(0)
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

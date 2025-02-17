@@ -6,7 +6,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerGuildRoleCreate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildRoleCreate) {
+func gatewayHandlerGuildRoleCreate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildRoleCreate) {
 	client.Caches().AddRole(event.Role)
 
 	client.EventManager().DispatchEvent(&events.RoleCreate{
@@ -19,7 +19,7 @@ func gatewayHandlerGuildRoleCreate(client bot.Client, sequenceNumber int, shardI
 	})
 }
 
-func gatewayHandlerGuildRoleUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildRoleUpdate) {
+func gatewayHandlerGuildRoleUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildRoleUpdate) {
 	oldRole, _ := client.Caches().Role(event.GuildID, event.Role.ID)
 	client.Caches().AddRole(event.Role)
 
@@ -34,7 +34,7 @@ func gatewayHandlerGuildRoleUpdate(client bot.Client, sequenceNumber int, shardI
 	})
 }
 
-func gatewayHandlerGuildRoleDelete(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildRoleDelete) {
+func gatewayHandlerGuildRoleDelete(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildRoleDelete) {
 	role, _ := client.Caches().RemoveRole(event.GuildID, event.RoleID)
 
 	client.EventManager().DispatchEvent(&events.RoleDelete{

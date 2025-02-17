@@ -6,7 +6,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerAutoModerationRuleCreate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventAutoModerationRuleCreate) {
+func gatewayHandlerAutoModerationRuleCreate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventAutoModerationRuleCreate) {
 	client.EventManager().DispatchEvent(&events.AutoModerationRuleCreate{
 		GenericAutoModerationRule: &events.GenericAutoModerationRule{
 			GenericEvent:       events.NewGenericEvent(client, sequenceNumber, shardID),
@@ -15,7 +15,7 @@ func gatewayHandlerAutoModerationRuleCreate(client bot.Client, sequenceNumber in
 	})
 }
 
-func gatewayHandlerAutoModerationRuleUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventAutoModerationRuleUpdate) {
+func gatewayHandlerAutoModerationRuleUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventAutoModerationRuleUpdate) {
 	client.EventManager().DispatchEvent(&events.AutoModerationRuleUpdate{
 		GenericAutoModerationRule: &events.GenericAutoModerationRule{
 			GenericEvent:       events.NewGenericEvent(client, sequenceNumber, shardID),
@@ -24,7 +24,7 @@ func gatewayHandlerAutoModerationRuleUpdate(client bot.Client, sequenceNumber in
 	})
 }
 
-func gatewayHandlerAutoModerationRuleDelete(client bot.Client, sequenceNumber int, shardID int, event gateway.EventAutoModerationRuleDelete) {
+func gatewayHandlerAutoModerationRuleDelete(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventAutoModerationRuleDelete) {
 	client.EventManager().DispatchEvent(&events.AutoModerationRuleDelete{
 		GenericAutoModerationRule: &events.GenericAutoModerationRule{
 			GenericEvent:       events.NewGenericEvent(client, sequenceNumber, shardID),
@@ -33,7 +33,7 @@ func gatewayHandlerAutoModerationRuleDelete(client bot.Client, sequenceNumber in
 	})
 }
 
-func gatewayHandlerAutoModerationActionExecution(client bot.Client, sequenceNumber int, shardID int, event gateway.EventAutoModerationActionExecution) {
+func gatewayHandlerAutoModerationActionExecution(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventAutoModerationActionExecution) {
 	client.EventManager().DispatchEvent(&events.AutoModerationActionExecution{
 		GenericEvent:                       events.NewGenericEvent(client, sequenceNumber, shardID),
 		EventAutoModerationActionExecution: event,

@@ -6,7 +6,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerGuildBanAdd(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildBanAdd) {
+func gatewayHandlerGuildBanAdd(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildBanAdd) {
 	client.EventManager().DispatchEvent(&events.GuildBan{
 		GenericEvent: events.NewGenericEvent(client, sequenceNumber, shardID),
 		GuildID:      event.GuildID,
@@ -14,7 +14,7 @@ func gatewayHandlerGuildBanAdd(client bot.Client, sequenceNumber int, shardID in
 	})
 }
 
-func gatewayHandlerGuildBanRemove(client bot.Client, sequenceNumber int, shardID int, event gateway.EventGuildBanRemove) {
+func gatewayHandlerGuildBanRemove(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventGuildBanRemove) {
 	client.EventManager().DispatchEvent(&events.GuildUnban{
 		GenericEvent: events.NewGenericEvent(client, sequenceNumber, shardID),
 		GuildID:      event.GuildID,

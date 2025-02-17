@@ -12,7 +12,7 @@ import (
 // Message raw Message type
 type Message struct {
 	Op   Opcode          `json:"op"`
-	S    int             `json:"s,omitempty"`
+	S    uint64          `json:"s,omitempty"`
 	T    EventType       `json:"t,omitempty"`
 	D    MessageData     `json:"d,omitempty"`
 	RawD json.RawMessage `json:"-"`
@@ -21,7 +21,7 @@ type Message struct {
 func (e *Message) UnmarshalJSON(data []byte) error {
 	var v struct {
 		Op Opcode          `json:"op"`
-		S  int             `json:"s,omitempty"`
+		S  uint64          `json:"s,omitempty"`
 		T  EventType       `json:"t,omitempty"`
 		D  json.RawMessage `json:"d,omitempty"`
 	}
@@ -639,7 +639,7 @@ func (MessageDataVoiceStateUpdate) messageData() {}
 type MessageDataResume struct {
 	Token     string `json:"token"`
 	SessionID string `json:"session_id"`
-	Seq       int    `json:"seq"`
+	Seq       uint64 `json:"seq"`
 }
 
 func (MessageDataResume) messageData() {}

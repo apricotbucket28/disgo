@@ -9,7 +9,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func gatewayHandlerMessageCreate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventMessageCreate) {
+func gatewayHandlerMessageCreate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventMessageCreate) {
 	if event.Flags.Has(discord.MessageFlagEphemeral) {
 		// Ignore ephemeral messages as they miss guild_id & member
 		return
@@ -64,7 +64,7 @@ func gatewayHandlerMessageCreate(client bot.Client, sequenceNumber int, shardID 
 	}
 }
 
-func gatewayHandlerMessageUpdate(client bot.Client, sequenceNumber int, shardID int, event gateway.EventMessageUpdate) {
+func gatewayHandlerMessageUpdate(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventMessageUpdate) {
 	oldMessage, _ := client.Caches().Message(event.ChannelID, event.ID)
 	client.Caches().AddMessage(event.Message)
 
@@ -104,17 +104,17 @@ func gatewayHandlerMessageUpdate(client bot.Client, sequenceNumber int, shardID 
 	}
 }
 
-func gatewayHandlerMessageDelete(client bot.Client, sequenceNumber int, shardID int, event gateway.EventMessageDelete) {
+func gatewayHandlerMessageDelete(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventMessageDelete) {
 	handleMessageDelete(client, sequenceNumber, shardID, event.ID, event.ChannelID, event.GuildID)
 }
 
-func gatewayHandlerMessageDeleteBulk(client bot.Client, sequenceNumber int, shardID int, event gateway.EventMessageDeleteBulk) {
+func gatewayHandlerMessageDeleteBulk(client bot.Client, sequenceNumber uint64, shardID int, event gateway.EventMessageDeleteBulk) {
 	for _, messageID := range event.IDs {
 		handleMessageDelete(client, sequenceNumber, shardID, messageID, event.ChannelID, event.GuildID)
 	}
 }
 
-func handleMessageDelete(client bot.Client, sequenceNumber int, shardID int, messageID snowflake.ID, channelID snowflake.ID, guildID *snowflake.ID) {
+func handleMessageDelete(client bot.Client, sequenceNumber uint64, shardID int, messageID snowflake.ID, channelID snowflake.ID, guildID *snowflake.ID) {
 	genericEvent := events.NewGenericEvent(client, sequenceNumber, shardID)
 
 	message, _ := client.Caches().RemoveMessage(channelID, messageID)
