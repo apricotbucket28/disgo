@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -46,7 +47,7 @@ type gatewayImpl struct {
 	status Status
 	connMu sync.Mutex // for conn and status
 
-	heartbeatCancel       context.CancelFunc
+	heartbeatCancel       atomic.Value
 	lastHeartbeatSent     time.Time
 	lastHeartbeatReceived time.Time
 }
@@ -130,9 +131,10 @@ func (g *gatewayImpl) Close(ctx context.Context) {
 }
 
 func (g *gatewayImpl) CloseWithCode(ctx context.Context, code int, message string) {
-	if g.heartbeatCancel != nil {
+	heartbeatCancel := g.heartbeatCancel.Load()
+	if heartbeatCancel != nil {
 		g.config.Logger.Debug("closing heartbeat goroutines...")
-		g.heartbeatCancel()
+		heartbeatCancel.(context.CancelFunc)()
 	}
 
 	g.connMu.Lock()
@@ -234,7 +236,7 @@ func (g *gatewayImpl) reconnect() {
 
 func (g *gatewayImpl) heartbeat(interval time.Duration) {
 	ctx, cancel := context.WithCancel(context.Background())
-	g.heartbeatCancel = cancel
+	g.heartbeatCancel.Store(cancel)
 
 	heartbeatTicker := time.NewTicker(interval)
 	defer heartbeatTicker.Stop()
