@@ -92,13 +92,8 @@ func (m *shardManagerImpl) Open(ctx context.Context) {
 	m.config.Logger.Debug("opening shards", slog.String("shard_ids", fmt.Sprint(m.config.ShardIDs)))
 	var wg sync.WaitGroup
 
-	m.shardsMu.Lock()
-	defer m.shardsMu.Unlock()
 	for shardInt := range m.config.ShardIDs {
 		shardID := shardInt
-		if _, ok := m.shards[shardID]; ok {
-			continue
-		}
 
 		wg.Add(1)
 		go func() {
@@ -108,6 +103,13 @@ func (m *shardManagerImpl) Open(ctx context.Context) {
 				return
 			}
 			defer m.config.RateLimiter.UnlockBucket(shardID)
+
+			m.shardsMu.Lock()
+			defer m.shardsMu.Unlock()
+
+			if _, ok := m.shards[shardID]; ok {
+				return
+			}
 
 			shard := m.config.GatewayCreateFunc(m.token, m.eventHandlerFunc, m.closeHandler, append(m.config.GatewayConfigOpts, gateway.WithShardID(shardID), gateway.WithShardCount(m.config.ShardCount))...)
 			m.shards[shardID] = shard
