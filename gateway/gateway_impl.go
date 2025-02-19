@@ -42,12 +42,11 @@ type gatewayImpl struct {
 	closeHandlerFunc CloseHandlerFunc
 	token            string
 
-	conn            *websocket.Conn
-	connMu          sync.Mutex
-	heartbeatCancel context.CancelFunc
-	status          Status
+	conn   *websocket.Conn
+	status Status
+	connMu sync.Mutex // for conn and status
 
-	heartbeatInterval     time.Duration
+	heartbeatCancel       context.CancelFunc
 	lastHeartbeatSent     time.Time
 	lastHeartbeatReceived time.Time
 }
@@ -233,11 +232,11 @@ func (g *gatewayImpl) reconnect() {
 	}
 }
 
-func (g *gatewayImpl) heartbeat() {
+func (g *gatewayImpl) heartbeat(interval time.Duration) {
 	ctx, cancel := context.WithCancel(context.Background())
 	g.heartbeatCancel = cancel
 
-	heartbeatTicker := time.NewTicker(g.heartbeatInterval)
+	heartbeatTicker := time.NewTicker(interval)
 	defer heartbeatTicker.Stop()
 	defer g.config.Logger.Debug("exiting heartbeat goroutine")
 
@@ -247,12 +246,12 @@ func (g *gatewayImpl) heartbeat() {
 			return
 
 		case <-heartbeatTicker.C:
-			g.sendHeartbeat()
+			g.sendHeartbeat(interval)
 		}
 	}
 }
 
-func (g *gatewayImpl) sendHeartbeat() {
+func (g *gatewayImpl) sendHeartbeat(timeout time.Duration) {
 	g.config.Logger.Debug("sending heartbeat")
 
 	sequence := 0
@@ -260,7 +259,7 @@ func (g *gatewayImpl) sendHeartbeat() {
 		sequence = *g.config.LastSequenceReceived
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), g.heartbeatInterval)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	if err := g.Send(ctx, OpcodeHeartbeat, MessageDataHeartbeat(sequence)); err != nil {
 		if errors.Is(err, discord.ErrShardNotConnected) || errors.Is(err, syscall.EPIPE) {
@@ -383,9 +382,9 @@ loop:
 
 		switch message.Op {
 		case OpcodeHello:
-			g.heartbeatInterval = time.Duration(message.D.(MessageDataHello).HeartbeatInterval) * time.Millisecond
+			interval := time.Duration(message.D.(MessageDataHello).HeartbeatInterval) * time.Millisecond
 			g.lastHeartbeatReceived = time.Now().UTC()
-			go g.heartbeat()
+			go g.heartbeat(interval)
 
 			if g.config.LastSequenceReceived == nil || g.config.SessionID == nil {
 				g.identify()
@@ -426,7 +425,8 @@ loop:
 			g.eventHandlerFunc(message.T, message.S, g.config.ShardID, eventData)
 
 		case OpcodeHeartbeat:
-			g.sendHeartbeat()
+			const timeout = 10 * time.Second
+			g.sendHeartbeat(timeout)
 
 		case OpcodeReconnect:
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
