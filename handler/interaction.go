@@ -21,6 +21,12 @@ func (e *InteractionEvent) CreateMessage(messageCreate discord.MessageCreate, op
 	return e.Respond(discord.InteractionResponseTypeCreateMessage, messageCreate, opts...)
 }
 
+// CreateMessageString is a convenience function for responding to the interaction with a string.
+func (e *InteractionEvent) CreateMessageString(content string, opts ...rest.RequestOpt) error {
+	messageCreate := discord.MessageCreate{Content: content}
+	return e.Respond(discord.InteractionResponseTypeCreateMessage, messageCreate, opts...)
+}
+
 // DeferCreateMessage responds to the interaction with a "bot is thinking..." message which should be edited later.
 func (e *InteractionEvent) DeferCreateMessage(ephemeral bool, opts ...rest.RequestOpt) error {
 	var data discord.InteractionResponseData
@@ -30,8 +36,14 @@ func (e *InteractionEvent) DeferCreateMessage(ephemeral bool, opts ...rest.Reque
 	return e.Respond(discord.InteractionResponseTypeDeferredCreateMessage, data, opts...)
 }
 
-// UpdateMessage responds to the interaction with updating the message the component is from.
+// UpdateMessage updates the message the component is from.
 func (e *InteractionEvent) UpdateMessage(messageUpdate discord.MessageUpdate, opts ...rest.RequestOpt) error {
+	return e.Respond(discord.InteractionResponseTypeUpdateMessage, messageUpdate, opts...)
+}
+
+// UpdateMessageString is a convenience function that updates the message the component is from with a string.
+func (e *InteractionEvent) UpdateMessageString(content string, opts ...rest.RequestOpt) error {
+	messageUpdate := discord.MessageUpdate{Content: &content}
 	return e.Respond(discord.InteractionResponseTypeUpdateMessage, messageUpdate, opts...)
 }
 
@@ -68,6 +80,11 @@ func (e *InteractionEvent) UpdateInteractionResponse(messageUpdate discord.Messa
 	return e.Client().Rest().UpdateInteractionResponse(e.ApplicationID(), e.Token(), messageUpdate, opts...)
 }
 
+func (e *InteractionEvent) UpdateInteractionResponseString(content string, opts ...rest.RequestOpt) (*discord.Message, error) {
+	messageUpdate := discord.MessageUpdate{Content: &content}
+	return e.Client().Rest().UpdateInteractionResponse(e.ApplicationID(), e.Token(), messageUpdate, opts...)
+}
+
 func (e *InteractionEvent) DeleteInteractionResponse(opts ...rest.RequestOpt) error {
 	return e.Client().Rest().DeleteInteractionResponse(e.ApplicationID(), e.Token(), opts...)
 }
@@ -80,7 +97,17 @@ func (e *InteractionEvent) CreateFollowupMessage(messageCreate discord.MessageCr
 	return e.Client().Rest().CreateFollowupMessage(e.ApplicationID(), e.Token(), messageCreate, opts...)
 }
 
+func (e *InteractionEvent) CreateFollowupMessageString(content string, opts ...rest.RequestOpt) (*discord.Message, error) {
+	messageCreate := discord.MessageCreate{Content: content}
+	return e.Client().Rest().CreateFollowupMessage(e.ApplicationID(), e.Token(), messageCreate, opts...)
+}
+
 func (e *InteractionEvent) UpdateFollowupMessage(messageID snowflake.ID, messageUpdate discord.MessageUpdate, opts ...rest.RequestOpt) (*discord.Message, error) {
+	return e.Client().Rest().UpdateFollowupMessage(e.ApplicationID(), e.Token(), messageID, messageUpdate, opts...)
+}
+
+func (e *InteractionEvent) UpdateFollowupMessageString(messageID snowflake.ID, content string, opts ...rest.RequestOpt) (*discord.Message, error) {
+	messageUpdate := discord.MessageUpdate{Content: &content}
 	return e.Client().Rest().UpdateFollowupMessage(e.ApplicationID(), e.Token(), messageID, messageUpdate, opts...)
 }
 

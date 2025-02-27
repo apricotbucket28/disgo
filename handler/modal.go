@@ -24,6 +24,11 @@ func (e *ModalEvent) UpdateInteractionResponse(messageUpdate discord.MessageUpda
 	return e.Client().Rest().UpdateInteractionResponse(e.ApplicationID(), e.Token(), messageUpdate, opts...)
 }
 
+func (e *ModalEvent) UpdateInteractionResponseString(content string, opts ...rest.RequestOpt) (*discord.Message, error) {
+	messageUpdate := discord.MessageUpdate{Content: &content}
+	return e.Client().Rest().UpdateInteractionResponse(e.ApplicationID(), e.Token(), messageUpdate, opts...)
+}
+
 func (e *ModalEvent) DeleteInteractionResponse(opts ...rest.RequestOpt) error {
 	return e.Client().Rest().DeleteInteractionResponse(e.ApplicationID(), e.Token(), opts...)
 }
@@ -36,7 +41,17 @@ func (e *ModalEvent) CreateFollowupMessage(messageCreate discord.MessageCreate, 
 	return e.Client().Rest().CreateFollowupMessage(e.ApplicationID(), e.Token(), messageCreate, opts...)
 }
 
+func (e *ModalEvent) CreateFollowupMessageString(content string, opts ...rest.RequestOpt) (*discord.Message, error) {
+	messageCreate := discord.MessageCreate{Content: content}
+	return e.Client().Rest().CreateFollowupMessage(e.ApplicationID(), e.Token(), messageCreate, opts...)
+}
+
 func (e *ModalEvent) UpdateFollowupMessage(messageID snowflake.ID, messageUpdate discord.MessageUpdate, opts ...rest.RequestOpt) (*discord.Message, error) {
+	return e.Client().Rest().UpdateFollowupMessage(e.ApplicationID(), e.Token(), messageID, messageUpdate, opts...)
+}
+
+func (e *ModalEvent) UpdateFollowupMessageString(messageID snowflake.ID, content string, opts ...rest.RequestOpt) (*discord.Message, error) {
+	messageUpdate := discord.MessageUpdate{Content: &content}
 	return e.Client().Rest().UpdateFollowupMessage(e.ApplicationID(), e.Token(), messageID, messageUpdate, opts...)
 }
 
