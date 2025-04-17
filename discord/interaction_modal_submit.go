@@ -40,6 +40,7 @@ func (i *ModalSubmitInteraction) UnmarshalJSON(data []byte) error {
 	i.baseInteraction.entitlements = interaction.Entitlements
 	i.baseInteraction.authorizingIntegrationOwners = interaction.AuthorizingIntegrationOwners
 	i.baseInteraction.context = interaction.Context
+	i.baseInteraction.attachmentSizeLimit = interaction.AttachmentSizeLimit
 
 	if i.baseInteraction.member != nil && i.baseInteraction.guildID != nil {
 		i.baseInteraction.member.GuildID = *i.baseInteraction.guildID
@@ -72,6 +73,7 @@ func (i ModalSubmitInteraction) MarshalJSON() ([]byte, error) {
 			Entitlements:                 i.entitlements,
 			AuthorizingIntegrationOwners: i.authorizingIntegrationOwners,
 			Context:                      i.context,
+			AttachmentSizeLimit:          i.attachmentSizeLimit,
 		},
 		Data: i.Data,
 	})
